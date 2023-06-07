@@ -308,40 +308,42 @@ class Mango {
 		parseWhitespace() {
 			this.parseRegex(/[\s\r\n]+/y);
 			
-			let start = this.parseRegex(/\-\-(\/*)/y);
-			if (start == undefined) return;
-			
-			let block = start.length;
-			
-			if (block == 0) {
-				while (this.current != '\r' && this.current != '\n' && !this.isDone) {
-					this.index++;
-				}
-			}
-			else {
-				while (true) {
-					while (this.current != '/') {
+			while (true) {
+				let start = this.parseRegex(/\-\-(\/*)/y);
+				if (start == undefined) break;
+				
+				let block = start.length;
+				
+				if (block == 0) {
+					while (this.current != '\r' && this.current != '\n' && !this.isDone) {
 						this.index++;
+					}
+				}
+				else {
+					while (true) {
+						while (this.current != '/') {
+							this.index++;
+							
+							if (this.isDone) throw 'Invalid comment';
+						}
 						
-						if (this.isDone) throw 'Invalid comment';
-					}
-					
-					let count = 0;
-					
-					while (this.current == '/') {
-						count++;
+						let count = 0;
+						
+						while (this.current == '/') {
+							count++;
+							this.index++;
+						}
+						
+						if (count >= block && this.parseRaw('--')) {
+							break;
+						}
+						
 						this.index++;
 					}
-					
-					if (count >= block && this.parseRaw('--')) {
-						break;
-					}
-					
-					this.index++;
 				}
+				
+				this.parseRegex(/[\s\r\n]+/y);
 			}
-			
-			this.parseRegex(/[\s\r\n]+/y);
 		}
 		
 		parseName() {
@@ -496,6 +498,12 @@ class Mango {
 				if (this.parseVarAssign()) continue;
 				if (this.parseTemplateAssign()) continue;
 				break;
+			}
+			
+			if (this.parseText(']')) {
+				const s = this.scope.copy();
+				this.scope = scope;
+				return new Mango.#List(s, array);
 			}
 			
 			while (!this.isDone) {
