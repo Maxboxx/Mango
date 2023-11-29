@@ -1,25 +1,15 @@
 
-/// Mango stuff.
+MangoFlags = {
+	none: 0,
+	pretty: 1,
+	commas: 2,
+	quotes: 4,
+	useNull: 8,
+	
+	json: 2 | 4 | 8
+};
+
 class Mango {
-	/// No flags.
-	static none = 0;
-	
-	/// Flag for pretty output.
-	static pretty = 1;
-	
-	/// Flag for using commas as separators.
-	static commas = 2;
-	
-	/// Flag for surrounding all keys with quotes. 
-	static quotes = 4;
-	
-	/// Flag for using the null keyword instead of nil.
-	static useNull = 8;
-	
-	/// Flag for json output.
-	static json = 2 | 4 | 8;
-	
-	/// Parses a mango string.
 	static parse(str, vars = {}) {
 		const parser = new Mango.#Parser(str);
 		
@@ -37,8 +27,7 @@ class Mango {
 		return value.evaluate(parser.scope);
 	}
 	
-	/// Converts mango data to a string.
-	static toString(data, flags = Mango.none) {
+	static toString(data, flags = MangoFlags.none) {
 		const writer = new Mango.#Writer(flags);
 		writer.writeValue(data);
 		return writer.toString();
@@ -734,7 +723,7 @@ class Mango {
 		
 		writeValue(value, t = '') {
 			if (value == null) {
-				this.segments.push(this.flags & Mango.useNull ? 'null' : 'nil');
+				this.segments.push(this.flags & MangoFlags.useNull ? 'null' : 'nil');
 			}
 			else if (value === true) {
 				this.segments.push('true');
@@ -754,7 +743,7 @@ class Mango {
 		}
 		
 		writeObject(obj, t) {
-			const pretty = this.flags & Mango.pretty;
+			const pretty = this.flags & MangoFlags.pretty;
 			const nt = t + '\t';
 			
 			if (pretty) {
@@ -768,7 +757,7 @@ class Mango {
 			
 			for (let i = 0; i < keys.length; i++) {
 				if (i > 0) {
-					if (this.flags & Mango.commas) {
+					if (this.flags & MangoFlags.commas) {
 						this.segments.push(pretty ? ',\n' + nt : ',');
 					}
 					else {
@@ -776,7 +765,7 @@ class Mango {
 					}
 				}
 				
-				if (this.flags & Mango.quotes || !((/^[a-zA-Z0-9_]+$/).test(keys[i]) && (/[a-zA-Z_]/).test(keys[i]))) {
+				if (this.flags & MangoFlags.quotes || !((/^[a-zA-Z0-9_]+$/).test(keys[i]) && (/[a-zA-Z_]/).test(keys[i]))) {
 					this.segments.push(JSON.stringify(keys[i]));
 				}
 				else {
@@ -797,7 +786,7 @@ class Mango {
 		
 		writeList(list, t) {
 			const nt = t + '\t';
-			const pretty = this.flags & Mango.pretty;
+			const pretty = this.flags & MangoFlags.pretty;
 			
 			if (pretty) {
 				this.segments.push('[\n' + nt);
@@ -808,7 +797,7 @@ class Mango {
 			
 			for (let i = 0; i < list.length; i++) {
 				if (i > 0) {
-					if (this.flags & Mango.commas) {
+					if (this.flags & MangoFlags.commas) {
 						this.segments.push(pretty ? ',\n' + nt : ',');
 					}
 					else {
@@ -828,3 +817,8 @@ class Mango {
 		}
 	};
 }
+
+module.exports = {
+	'MangoFlags': MangoFlags,
+	'Mango': Mango
+};
