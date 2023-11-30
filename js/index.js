@@ -1,5 +1,5 @@
 
-MangoFlags = {
+export const MangoFlags = {
 	none: 0,
 	pretty: 1,
 	commas: 2,
@@ -9,7 +9,7 @@ MangoFlags = {
 	json: 2 | 4 | 8
 };
 
-class Mango {
+export class Mango {
 	static parse(str, vars = {}) {
 		const parser = new Mango.#Parser(str);
 		
@@ -817,8 +817,3 @@ class Mango {
 		}
 	};
 }
-
-module.exports = {
-	'MangoFlags': MangoFlags,
-	'Mango': Mango
-};
